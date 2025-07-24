@@ -1,26 +1,39 @@
+
+from http.client import HTTPException
+from typing import List
 from fastapi import FastAPI
-from pydantic import BaseModel
-from starlette.responses import JSONResponse
-from starlette.requests import Request
+from pydantic.v1.main import Model
+
 app = FastAPI()
+students_m = []
 
-@app.get("/")
-def read_root():
-    return {"message": "GET utilisé"}
+@app.get("/hello", status_code=200)
+def dire_hello():
+    return "hello world"
+
+@app.get ("/welcome", status_code=200)
+def welcome_name(request: app):
+    return  {f"welcome {request.name}"}
+
+class Student(Model):
+    Reference: str
+    FisrtName: str
+    LastName: str
+    Age: int
+
+    @app.post("/students")
+def add_students(students: List[Student], students_m=None):
+    students_m.extend(students)
+    return students_m
 
 
-@app.post("/")
-def create_item():
-    return {"message": "POST utilisé"}
+@app.get("/students", status_code=200)
+def object_students():
+    return students_m
 
-@app.put("/")
-def update_item():
-    return {"message": "PUT utilisé"}
-
-@app.delete("/")
-def delete_item():
-    return {"message": "DELETE utilisé"}
-
-@app.patch("/")
-def patch_item():
-    return {"message": "PATCH utilisé"}
+@app.get("/students-authorized")
+def students_authorized(authorization=None, none=None):
+    if authorization is none:
+        raise HTTPException(status_code=401, detail="unauthorized")
+    if authorization != "bon courage":
+        raise HTTPException(status_code=403, detail="Forbidden")
